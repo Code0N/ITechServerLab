@@ -1,6 +1,7 @@
 from http.server import BaseHTTPRequestHandler, HTTPServer
 import os
 from random import randint as ri
+import sqlite3
 
 from requests import HTTPError
 
@@ -15,16 +16,16 @@ class myHandler(BaseHTTPRequestHandler):
             if self.path.endswith(".html"):
                 mimetype = 'text/html'
                 sendReply = True
-            if self.path.endswith(".jpg"):
+            elif self.path.endswith(".jpg"):
                 mimetype = 'image/jpg'
                 sendReply = True
-            if self.path.endswith(".gif"):
+            elif self.path.endswith(".gif"):
                 mimetype = 'image/gif'
                 sendReply = True
-            if self.path.endswith(".js"):
+            elif self.path.endswith(".js"):
                 mimetype = 'application/javascript'
                 sendReply = True
-            if self.path.endswith(".css"):
+            elif self.path.endswith(".css"):
                 mimetype = 'text/css'
                 sendReply = True
             else:
@@ -37,11 +38,24 @@ class myHandler(BaseHTTPRequestHandler):
                     self.send_header('Content-type', mimetype)
                     self.end_headers()
                     if mimetype == 'text/html' or mimetype == 'application/javascript' or mimetype == 'text/css':
-                        f = open(os.curdir + os.sep + self.path)
-                        self.wfile.write(bytes(f.read(), "utf-8"))
+                        if mimetype != 'text/html':
+                            with open(os.curdir + os.sep + self.path) as f:
+                                self.wfile.write(bytes(f.read(), "utf-8"))
+                        else:
+                            #Работа с БД
+                            dbconn = sqlite3.connect('Chinook_Sqlite.sqlite')
+                            dbcursor = dbconn.cursor()
+
+                            dbconn.close()
+                            #Работа с БД
+                            with open(os.curdir + os.sep + self.path) as f:
+                                content = f.read()
+                                content = content.replace("<p>", "<h1>")
+                                content = content.replace("</p>", "</h1>")
+                                self.wfile.write(bytes(content, "utf-8"))
                     else:
-                        f = open(os.curdir + os.sep + self.path, 'rb')
-                        self.wfile.write(f.read())
+                        with open(os.curdir + os.sep + self.path, 'rb') as f:
+                            self.wfile.write(f.read())
                     f.close()
                 else:
                     print("Передача файла {} началась\n".format(os.curdir + os.sep + self.path))
