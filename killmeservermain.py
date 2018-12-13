@@ -45,13 +45,13 @@ class myHandler(BaseHTTPRequestHandler):
                             #Работа с БД
                             dbconn = sqlite3.connect('Chinook_Sqlite.sqlite')
                             dbcursor = dbconn.cursor()
-
+                            dbcursor.execute("SELECT Name FROM Artist ORDER BY Name LIMIT 3")
+                            dbresults = dbcursor.fetchall()
                             dbconn.close()
                             #Работа с БД
                             with open(os.curdir + os.sep + self.path) as f:
                                 content = f.read()
-                                content = content.replace("<p>", "<h1>")
-                                content = content.replace("</p>", "</h1>")
+                                content = content.replace("[names]", ' '.join(str(x) for x in dbresults))
                                 self.wfile.write(bytes(content, "utf-8"))
                     else:
                         with open(os.curdir + os.sep + self.path, 'rb') as f:
