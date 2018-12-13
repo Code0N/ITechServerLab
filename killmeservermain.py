@@ -1,12 +1,6 @@
 from http.server import BaseHTTPRequestHandler, HTTPServer
 import os
-import posixpath
-import urllib
-import cgi
-import shutil
-import mimetypes
-import re
-from io import StringIO
+from random import randint as ri
 
 from requests import HTTPError
 
@@ -67,11 +61,16 @@ class myHandler(BaseHTTPRequestHandler):
         except TimeoutError:
             self.send_error(504)
 
-        def do_POST(self):
-            pass # TODO: Заипашить код
-
-        def deal_post_data(self):
-            print(self.hea)
+    def do_POST(self):
+        print("Пришёл POST запрос")
+        try:
+            length = self.headers['content-length']
+            data = self.rfile.read(int(length))
+            with open(os.curdir + os.sep + str(ri(0, 1000000000)), 'wb') as fh:
+                fh.write(data)
+            self.send_response(200)
+        except:
+            self.send_error(503)
 
 
 try:
